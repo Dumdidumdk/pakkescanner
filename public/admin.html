@@ -9,15 +9,104 @@
 </head>
 <body>
   <header class="topbar">
-    <span>Logget ind som <strong id="user-name"></strong></span>
-    <button id="logout" class="link">Log ud</button>
+    <span><strong>Pakkescanner</strong> · <span id="user-name"></span></span>
+    <span>
+      <a href="/scan.html">Scanner</a>
+      <button id="logout" class="link">Log ud</button>
+    </span>
   </header>
-  <main class="card wide">
-    <h1>Oversigt</h1>
-    <p class="muted">Tabel over scanninger og Excel-eksport kommer i fase 3 og 4.</p>
-    <p><a href="/scan.html">Gå til scanner</a></p>
+
+  <main class="admin-main">
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="scans" role="tab">Alle scanninger</button>
+      <button class="tab" data-tab="inside" role="tab">Pakker inde nu</button>
+    </nav>
+
+    <!-- Alle scanninger -->
+    <section id="tab-scans">
+      <form id="filters" class="filters">
+        <label>Fra
+          <input type="date" name="from">
+        </label>
+        <label>Til
+          <input type="date" name="to">
+        </label>
+        <label>Bruger
+          <select name="user"><option value="">Alle</option></select>
+        </label>
+        <label>Type
+          <select name="type">
+            <option value="">Ind og ud</option>
+            <option value="IN">Kun ind</option>
+            <option value="OUT">Kun ud</option>
+          </select>
+        </label>
+        <label class="grow">Søg
+          <input type="search" name="q" placeholder="Stregkode, sted eller note">
+        </label>
+        <label class="check">
+          <input type="checkbox" name="warnings" value="1"> Kun advarsler
+        </label>
+        <button type="reset" class="secondary">Nulstil</button>
+      </form>
+
+      <div class="table-bar">
+        <span id="scan-count" class="muted"></span>
+        <span class="pager">
+          <button id="prev-page" class="secondary">‹ Forrige</button>
+          <span id="page-info" class="muted"></span>
+          <button id="next-page" class="secondary">Næste ›</button>
+        </span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tidspunkt</th><th>Stregkode</th><th>Type</th><th>Bruger</th>
+              <th>Afleveret hvor</th><th>Note</th><th>Billede</th><th>Advarsel</th>
+            </tr>
+          </thead>
+          <tbody id="scan-rows"></tbody>
+        </table>
+        <p id="scan-empty" class="muted empty" hidden>Ingen scanninger matcher.</p>
+      </div>
+    </section>
+
+    <!-- Pakker inde nu -->
+    <section id="tab-inside" hidden>
+      <div class="table-bar">
+        <span id="inside-count" class="muted"></span>
+        <input type="search" id="inside-q" placeholder="Søg stregkode">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Stregkode</th><th>Scannet ind</th><th>Af</th><th>Note</th><th>Advarsel</th></tr>
+          </thead>
+          <tbody id="inside-rows"></tbody>
+        </table>
+        <p id="inside-empty" class="muted empty" hidden>Ingen pakker er inde lige nu.</p>
+      </div>
+    </section>
   </main>
+
+  <!-- Historik for én pakke -->
+  <dialog id="package-dialog">
+    <header class="dialog-head">
+      <h2 id="package-title"></h2>
+      <button id="package-close" class="link" aria-label="Luk">✕</button>
+    </header>
+    <p id="package-status"></p>
+    <ol id="package-history" class="history"></ol>
+  </dialog>
+
+  <!-- Stort billede -->
+  <dialog id="photo-dialog">
+    <img id="photo-big" alt="Billede fra udscanning">
+  </dialog>
+
   <script src="/js/common.js"></script>
-  <script>initPage();</script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

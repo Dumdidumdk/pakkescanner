@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const db = require('./db');
-const { requireLogin } = require('./auth');
+const { requireLogin, requireAdmin } = require('./auth');
 
 const router = express.Router();
 
@@ -79,11 +79,78 @@ router.post('/scans', requireLogin, (req, res) => {
   res.status(201).json({ id: Number(result.lastInsertRowid), warning });
 });
 
+// Byg WHERE-del ud fra filtre i query-strengen. Bruges af både oversigten og Excel-eksporten.
+// from/to er ISO-tidspunkter (browseren omregner lokale datoer til UTC).
+function scanFilter(query) {
+  const where = [];
+  const params = [];
+  const from = query.from && toDbTime(query.from);
+  const to = query.to && toDbTime(query.to);
+  if (from) { where.push('s.scanned_at >= ?'); params.push(from); }
+  if (to) { where.push('s.scanned_at < ?'); params.push(to); }
+  if (query.user) { where.push('s.user_id = ?'); params.push(Number(query.user) || 0); }
+  if (query.type === 'IN' || query.type === 'OUT') { where.push('s.type = ?'); params.push(query.type); }
+  if (query.warnings === '1') where.push('s.warning IS NOT NULL');
+  if (typeof query.q === 'string' && query.q.trim()) {
+    const like = `%${query.q.trim().replace(/[\\%_]/g, '\\$&')}%`;
+    where.push(`(s.barcode LIKE ? ESCAPE '\\' OR s.location LIKE ? ESCAPE '\\' OR s.note LIKE ? ESCAPE '\\')`);
+    params.push(like, like, like);
+  }
+  return { sql: where.length ? 'WHERE ' + where.join(' AND ') : '', params };
+}
+
+const SCAN_COLUMNS = `
+  s.id, s.barcode, s.type, s.location, s.note, s.warning, s.scanned_at, s.received_at,
+  s.photo_path, u.name AS user_name
+`;
+
+// Alle scanninger, nyeste først (kun admin)
+router.get('/scans', requireAdmin, (req, res) => {
+  const filter = scanFilter(req.query);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 100, 1), 500);
+  const offset = Math.max(Number(req.query.offset) || 0, 0);
+
+  const total = db.prepare(`SELECT COUNT(*) AS n FROM scans s ${filter.sql}`).get(...filter.params).n;
+  const rows = db.prepare(`
+    SELECT ${SCAN_COLUMNS}
+    FROM scans s JOIN users u ON u.id = s.user_id
+    ${filter.sql}
+    ORDER BY s.scanned_at DESC, s.id DESC
+    LIMIT ? OFFSET ?
+  `).all(...filter.params, limit, offset);
+  res.json({ total, rows });
+});
+
+// Status pr. pakke ud fra seneste scanning (kun admin). status=in viser pakker der er inde lige nu.
+router.get('/packages', requireAdmin, (req, res) => {
+  const where = [`s.id = (SELECT id FROM scans WHERE barcode = s.barcode ORDER BY scanned_at DESC, id DESC LIMIT 1)`];
+  const params = [];
+  if (req.query.status === 'in') where.push(`s.type = 'IN'`);
+  if (req.query.status === 'out') where.push(`s.type = 'OUT'`);
+  if (typeof req.query.q === 'string' && req.query.q.trim()) {
+    where.push(`s.barcode LIKE ? ESCAPE '\\'`);
+    params.push(`%${req.query.q.trim().replace(/[\\%_]/g, '\\$&')}%`);
+  }
+  const rows = db.prepare(`
+    SELECT ${SCAN_COLUMNS},
+           (SELECT MIN(scanned_at) FROM scans WHERE barcode = s.barcode AND type = 'IN') AS first_in_at
+    FROM scans s JOIN users u ON u.id = s.user_id
+    WHERE ${where.join(' AND ')}
+    ORDER BY s.scanned_at DESC, s.id DESC
+    LIMIT 1000
+  `).all(...params);
+  res.json({ total: rows.length, rows });
+});
+
+// Brugere til filteret i oversigten (kun admin)
+router.get('/users', requireAdmin, (req, res) => {
+  res.json(db.prepare(`SELECT id, username, name, role, active FROM users ORDER BY name`).all());
+});
+
 // Seneste status + historik for én pakke
 router.get('/packages/:barcode', requireLogin, (req, res) => {
   const history = db.prepare(`
-    SELECT s.id, s.barcode, s.type, s.location, s.note, s.warning, s.scanned_at,
-           s.photo_path IS NOT NULL AS has_photo, u.name AS user_name
+    SELECT ${SCAN_COLUMNS}, s.photo_path IS NOT NULL AS has_photo
     FROM scans s JOIN users u ON u.id = s.user_id
     WHERE s.barcode = ?
     ORDER BY s.scanned_at DESC, s.id DESC
@@ -97,4 +164,4 @@ router.get('/locations', requireLogin, (req, res) => {
   res.json(rows.map(r => r.name));
 });
 
-module.exports = { router, photoDir };
+module.exports = { router, photoDir, scanFilter, SCAN_COLUMNS };

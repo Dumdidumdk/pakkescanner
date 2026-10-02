@@ -134,7 +134,8 @@ Hvis en stregkode er beskadiget, kan nummeret tastes ind.
 | POST | `/api/login` | Log ind |
 | POST | `/api/logout` | Log ud |
 | POST | `/api/scans` | Ny scanning `{client_id, barcode, type, location, note, scanned_at}` + evt. billede. Samme `client_id` to gange = ignoreres |
-| GET | `/api/scans` | Liste med filtre (`from`, `to`, `user`, `type`, `q`) |
+| GET | `/api/scans` | Liste med filtre (`from`, `to`, `user`, `type`, `q`, `warnings`) + sider (`limit`, `offset`) |
+| GET | `/api/packages` | Status pr. pakke, `status=in` = pakker inde nu |
 | GET | `/api/packages/:barcode` | Historik for én pakke |
 | GET | `/api/export.xlsx` | Excel-fil med samme filtre |
 | GET/POST | `/api/users` | Brugeradministration (kun admin) |
@@ -172,7 +173,7 @@ pakkescanner/
 |---|---|---|
 | **1. Grundlag** ✅ | Projekt, database, login, opret første admin-bruger | Man kan logge ind |
 | **2. Scanning** ✅ | Kamera-scanner, scan ind/ud, billede, manuel indtastning, **offline-kø** | Telefonen kan scanne og gemme – også uden net |
-| **3. Oversigt** | Admin-tabel, filtre, pakkehistorik | Alt kan ses på computeren |
+| **3. Oversigt** ✅ | Admin-tabel, filtre, pakkehistorik | Alt kan ses på computeren |
 | **4. Excel** | Eksport af filtrerede data | .xlsx-fil kan downloades |
 | **5. Brugere & steder** | Admin-sider til brugere og afleveringssteder | Ingen manuel database-redigering |
 | **6. Drift** | HTTPS, hosting, backup af databasen | Kan bruges i virkeligheden |
