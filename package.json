@@ -1,0 +1,21 @@
+{
+  "name": "pakkescanner",
+  "version": "1.0.0",
+  "description": "Scan pakker ind og ud med telefonens kamera",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "create-user": "node scripts/create-user.js",
+    "add-location": "node scripts/add-location.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "html5-qrcode": "^2.3.8"
+  }
+}

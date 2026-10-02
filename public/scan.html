@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <title>Pakkescanner – Scan</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="scan-page">
+  <header class="topbar">
+    <span><strong id="user-name"></strong></span>
+    <span>
+      <a id="admin-link" href="/admin.html" hidden>Oversigt</a>
+      <button id="logout" class="link">Log ud</button>
+    </span>
+  </header>
+
+  <div id="net-status" class="net-status"></div>
+
+  <main class="scan-main">
+    <div class="mode-switch" role="tablist">
+      <button id="mode-in" class="mode in active" role="tab">Scan ind</button>
+      <button id="mode-out" class="mode out" role="tab">Scan ud</button>
+    </div>
+
+    <section id="scanner-view">
+      <div id="reader" class="reader"></div>
+      <p id="camera-error" class="error" hidden></p>
+      <button id="manual-btn" class="secondary">Tast nummer manuelt</button>
+    </section>
+
+    <form id="scan-form" class="scan-form" hidden>
+      <h2 id="form-title"></h2>
+      <label>Stregkode
+        <input id="barcode" name="barcode" inputmode="numeric" autocomplete="off" required>
+      </label>
+      <p id="warning" class="warning" hidden></p>
+
+      <div id="out-fields">
+        <label>Afleveret hvor?
+          <input id="location" name="location" list="location-list" autocomplete="off"
+                 placeholder="Vælg fra listen eller skriv selv">
+          <datalist id="location-list"></datalist>
+        </label>
+
+        <div class="photo-field">
+          <label class="photo-btn secondary">
+            <span id="photo-label">📷 Tag billede</span>
+            <input id="photo" type="file" accept="image/*" capture="environment" hidden>
+          </label>
+          <img id="photo-preview" class="photo-preview" alt="" hidden>
+          <button id="photo-remove" type="button" class="link" hidden>Fjern billede</button>
+        </div>
+      </div>
+
+      <label>Note (valgfri)
+        <input id="note" name="note" maxlength="500" autocomplete="off">
+      </label>
+
+      <p id="form-error" class="error" hidden></p>
+      <div class="form-buttons">
+        <button type="button" id="cancel-btn" class="secondary">Annuller</button>
+        <button type="submit" id="save-btn">Gem</button>
+      </div>
+    </form>
+
+    <section class="recent">
+      <h2>Seneste scanninger på denne telefon</h2>
+      <ul id="recent-list" class="recent-list"></ul>
+      <p id="recent-empty" class="muted">Ingen scanninger endnu.</p>
+    </section>
+  </main>
+
+  <script src="/vendor/html5-qrcode.min.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/queue.js"></script>
+  <script src="/js/scan.js"></script>
+</body>
+</html>

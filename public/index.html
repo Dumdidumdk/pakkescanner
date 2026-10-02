@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pakkescanner – Log ind</title>
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Pakkescanner</h1>
+    <form id="login-form">
+      <label>Brugernavn
+        <input name="username" autocomplete="username" autocapitalize="none" required>
+      </label>
+      <label>Kode
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="error" class="error" hidden></p>
+      <button type="submit">Log ind</button>
+    </form>
+  </main>
+  <script src="/js/login.js"></script>
+</body>
+</html>
