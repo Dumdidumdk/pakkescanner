@@ -17,5 +17,8 @@
     "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "html5-qrcode": "^2.3.8"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
